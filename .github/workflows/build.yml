@@ -1,4 +1,4 @@
-name: Build PS5 YouTube Music launcher
+name: Build ScrewU2Music v0.2
 on:
   workflow_dispatch:
   push:
@@ -30,8 +30,8 @@ jobs:
           find ps5-sdk/samples/browser -type f -name '*.elf' -print
           ELF=$(find ps5-sdk/samples/browser -type f -name '*.elf' | head -n 1)
           test -n "$ELF"
-          cp "$ELF" YTMusic_PS5.elf
+          cp "$ELF" ScrewU2Music.elf
       - uses: actions/upload-artifact@v4
         with:
-          name: YTMusic_PS5_elf
-          path: YTMusic_PS5.elf
+          name: ScrewU2Music_v0_2_elf
+          path: ScrewU2Music.elf
