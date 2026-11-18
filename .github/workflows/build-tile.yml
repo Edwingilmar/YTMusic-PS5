@@ -68,3 +68,27 @@ jobs:
             gh release create auto-latest --title "ScrewU2Music latest installer" --notes "Experimental PS5 one-ELF installer. Installs and attempts to launch ScrewU2Music." --latest
           fi
           gh release upload auto-latest ScrewU2Music.elf --clobber
+      - name: Update Payload Manager catalog version and checksum
+        if: github.ref == 'refs/heads/main'
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, datetime
+          catalog = pathlib.Path('catalog/payloads.json')
+          data = json.loads(catalog.read_text())
+          item = next(p for p in data['payloads'] if p['id'] == 'screwu2music')
+          item['version'] = '1.0.' + os.environ['BUILD_NUMBER']
+          item['last_update'] = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+          item['checksum'] = hashlib.sha256(pathlib.Path('ScrewU2Music.elf').read_bytes()).hexdigest()
+          catalog.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add catalog/payloads.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update ScrewU2Music catalog to build $BUILD_NUMBER [skip ci]"
+            git push origin HEAD:main
+          fi
