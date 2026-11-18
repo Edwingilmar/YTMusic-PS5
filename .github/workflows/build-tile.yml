@@ -1,0 +1,49 @@
+name: Build ScrewU2Music PS5 tile installation kit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ps5-app/**'
+      - 'assets/logo.svg'
+      - '.github/workflows/build-tile.yml'
+permissions:
+  contents: read
+jobs:
+  build-tile:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make python3 python3-pip python3-cairosvg imagemagick git
+      - name: Fetch and install PS5 payload SDK
+        run: |
+          git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
+          make -C ps5-sdk
+          make -C ps5-sdk DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
+      - name: Build tile app and installation payload
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
+          cd ps5-sdk/samples/install_app
+          cp "$GITHUB_WORKSPACE/ps5-app/eboot.c" eboot.c
+          sed -i 's/TITLE_ID := FAKE02932/TITLE_ID := SCUM00001/' Makefile
+          mkdir -p SCUM00001/sce_sys
+          cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00001/sce_sys/param.json
+          cp SCUM00001/sce_sys/param.json SCUM00001/sce_sys/param.json.system
+          python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00001/icon0.png",output_width=512,output_height=512)'
+          make
+          mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys"
+          cp payload.elf "$GITHUB_WORKSPACE/tile-kit/ScrewU2Music-install.elf"
+          cp SCUM00001/eboot.bin "$GITHUB_WORKSPACE/tile-kit/SCUM00001/eboot.bin"
+          cp SCUM00001/icon0.png "$GITHUB_WORKSPACE/tile-kit/SCUM00001/icon0.png"
+          cp SCUM00001/sce_sys/param.json* "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys/"
+      - name: Upload installation kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScrewU2Music-PS5-tile-kit-UNTESTED
+          path: tile-kit/
+          if-no-files-found: error
