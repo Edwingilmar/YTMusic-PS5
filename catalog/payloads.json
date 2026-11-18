@@ -1,0 +1,17 @@
+{
+  "name": "ScrewU2Music",
+  "icons_url": "icons.json",
+  "payloads": [
+    {
+      "id": "screwu2music",
+      "name": "ScrewU2Music",
+      "filename": "ScrewU2Music.elf",
+      "url": "https://github.com/Edwingilmar/YTMusic-PS5/releases/download/auto-latest/ScrewU2Music.elf",
+      "description": "PS5 YouTube Music UI experiment. Not yet a music player or installer.",
+      "version": "0.5-test",
+      "category": "Media",
+      "icon_key": "screwu2music-logo",
+      "source": "https://github.com/Edwingilmar/YTMusic-PS5"
+    }
+  ]
+}
