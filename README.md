@@ -1,10 +1,20 @@
-# YouTube Music PS5 launcher v0.1 (experimental)
+# ScrewU2Music (PS5 homebrew prototype)
 
-Source code only until GitHub Actions successfully compiles an ELF.
+![ScrewU2Music brand logo](assets/logo.svg)
 
-This experimental PS5 payload attempts to launch https://music.youtube.com/ via sceSystemServiceLaunchWebBrowser. It does not provide a native player. Audio, navigation, browser support, and firmware 13.60 compatibility are untested.
+## Current status
+This repository currently builds **PS5 ELF payload diagnostics**, not an installable PS5 application. A successful ELF launch does not open a music-player interface or install an icon on the home screen.
 
-## Build
-Open Actions > Build PS5 YouTube Music launcher > Run workflow. If successful, download artifact YTMusic_PS5_elf, extract the ELF and test using your payload loader.
+The current v0.4 ELF is a notification experiment. It is **not** a Spotify/YouTube Music player, and the PS5 firmware 13.60 UI and audio paths have not been implemented or validated.
 
-Based on ps5-payload-dev/sdk browser sample. Not affiliated with Google, YouTube, or Sony.
+## Target application
+- Standalone dark interface with green accents
+- Controller navigation, home, search, library and playback controls
+- Local audio playback first; online service integration only after network, authentication, and decoding are validated
+- PS5 application packaging and installable home-screen icon, subject to a verified PS5 homebrew app toolchain
+
+## Branding
+The editable vector logo is at [assets/logo.svg](assets/logo.svg). This is a newly drawn SVG approximation of the approved visual concept, **not** the original rendered PNG. A native PS5 package would require platform-specific icon/splash assets and integration during packaging.
+
+## Builds
+The GitHub Actions workflow currently publishes a diagnostic `ScrewU2Music.elf`. Do not mistake it for an installable `.pkg` or a completed player.
