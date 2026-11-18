@@ -1,0 +1,36 @@
+name: Build PS5 YouTube Music launcher
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang lld llvm make cmake pkg-config git python3
+      - name: Fetch PS5 payload SDK
+        run: git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
+      - name: Build SDK and browser sample
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cd ps5-sdk
+          make
+          cp ../main.c samples/browser/main.c
+          make -C samples/browser
+      - name: Collect ELF
+        shell: bash
+        run: |
+          set -euo pipefail
+          find ps5-sdk/samples/browser -type f -name '*.elf' -print
+          ELF=$(find ps5-sdk/samples/browser -type f -name '*.elf' | head -n 1)
+          test -n "$ELF"
+          cp "$ELF" YTMusic_PS5.elf
+      - uses: actions/upload-artifact@v4
+        with:
+          name: YTMusic_PS5_elf
+          path: YTMusic_PS5.elf
