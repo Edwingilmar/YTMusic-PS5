@@ -1,4 +1,4 @@
-name: Build ScrewU2Music native network probe
+name: Build ScrewU2Music v0.4 visual test
 on:
   workflow_dispatch:
   push:
@@ -16,21 +16,21 @@ jobs:
           sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make cmake pkg-config git python3 wget
       - name: Fetch PS5 payload SDK
         run: git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
-      - name: Build SDK and native HTTP2 probe
+      - name: Build SDK and notification visual test
         shell: bash
         run: |
           set -euxo pipefail
           cd ps5-sdk
           make
           make DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
-          cp ../network_probe.c samples/http2_get/main.c
-          PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk" make -C samples/http2_get
+          cp ../visual_test.c samples/notify/main.c
+          PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk" make -C samples/notify
       - name: Collect ELF
         shell: bash
         run: |
           set -euo pipefail
-          find ps5-sdk/samples/http2_get -type f -name '*.elf' -print
-          ELF=$(find ps5-sdk/samples/http2_get -type f -name '*.elf' | head -n 1)
+          find ps5-sdk/samples/notify -type f -name '*.elf' -print
+          ELF=$(find ps5-sdk/samples/notify -type f -name '*.elf' | head -n 1)
           test -n "$ELF"
           cp "$ELF" ScrewU2Music.elf
       - uses: actions/upload-artifact@v4
@@ -45,6 +45,6 @@ jobs:
         run: |
           set -euo pipefail
           if ! gh release view auto-latest >/dev/null 2>&1; then
-            gh release create auto-latest --title "ScrewU2Music latest" --notes "Native HTTPS diagnostic only. This is not yet a music player." --latest
+            gh release create auto-latest --title "ScrewU2Music latest" --notes "Visible notification diagnostic only. This is not yet a music player." --latest
           fi
           gh release upload auto-latest ScrewU2Music.elf --clobber
