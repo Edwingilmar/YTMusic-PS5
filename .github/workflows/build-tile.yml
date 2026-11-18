@@ -43,7 +43,7 @@ jobs:
           python3 make_fself.py --ptype fake --paid 0x3800000000000022 --app-version 0x07590001 --fw-version 0x07590001 eboot.elf SCUM00001/eboot.bin
           # Embed the signed eboot, icon and metadata directly in a single installer ELF.
           cp "$GITHUB_WORKSPACE/ps5-app/one_click_installer.c" payload.c
-          make payload.elf
+          make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet -lSceSsl -lSceHttp"
           mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys"
           cp "$GITHUB_WORKSPACE/ps5-app/stage_tile.py" "$GITHUB_WORKSPACE/tile-kit/stage_tile.py"
           cp payload.elf "$GITHUB_WORKSPACE/tile-kit/ScrewU2Music-install.elf"
@@ -67,7 +67,10 @@ jobs:
           if ! gh release view auto-latest >/dev/null 2>&1; then
             gh release create auto-latest --title "ScrewU2Music latest installer" --notes "Experimental PS5 one-ELF installer. Installs and attempts to launch ScrewU2Music." --latest
           fi
-          gh release upload auto-latest ScrewU2Music.elf --clobber
+          cp tile-kit/SCUM00001/eboot.bin ScrewU2Music-eboot.bin
+          cp tile-kit/SCUM00001/icon0.png ScrewU2Music-icon0.png
+          cp tile-kit/SCUM00001/sce_sys/param.json ScrewU2Music-param.json
+          gh release upload auto-latest ScrewU2Music.elf ScrewU2Music-eboot.bin ScrewU2Music-icon0.png ScrewU2Music-param.json --clobber
       - name: Update Payload Manager catalog version and checksum
         if: github.ref == 'refs/heads/main'
         env:
