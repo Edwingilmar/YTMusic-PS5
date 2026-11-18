@@ -36,6 +36,7 @@ static const char page[] =
 "<div class='card'><h2 id='tab'>Inicio</h2><p>Bienvenido a ScrewU2Music v0.6</p>"
 "<p>Interfaz experimental para PS5. Reproduccion aun no disponible.</p>"
 "<p style='color:#b2c4b7'>YouTube Music no abre directamente en el navegador PS5. La integracion de reproduccion sigue pendiente.</p></div>"
+"<footer style='margin-top:8vh;text-align:center;color:#a2b3a7;font-size:16px'>Created by Gilmar</footer>"
 "<script>function show(t){document.getElementById('tab').textContent=t}</script></html>";
 int main(void) {
   int s=socket(AF_INET,SOCK_STREAM,0);
