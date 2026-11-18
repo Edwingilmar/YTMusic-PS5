@@ -70,5 +70,15 @@ int main(void) {
   if (err) printf("ScrewU2Music register failed: 0x%08x\n", err);
   else printf("ScrewU2Music tile registered.\n");
   sceAppInstUtilTerminate();
-  return err ? 3 : 0;
+  if (err) return 3;
+  app_launch_ctx_t ctx = {0};
+  err = sceUserServiceInitialize(0);
+  if (err) { printf("UserService init failed: 0x%08x\\n", err); return 4; }
+  err = sceUserServiceGetForegroundUser(&ctx.user_id);
+  if (err) { printf("Foreground user failed: 0x%08x\\n", err); return 5; }
+  char *args[] = {0};
+  err = sceSystemServiceLaunchApp(TITLE_ID, args, &ctx);
+  if (err < 0) { printf("Auto launch failed: 0x%08x\\n", err); return 6; }
+  printf("ScrewU2Music launch requested.\\n");
+  return 0;
 }
