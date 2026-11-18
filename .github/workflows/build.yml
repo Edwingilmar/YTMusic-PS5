@@ -24,6 +24,7 @@ jobs:
           make
           make DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
           cp ../ui_server_test.c samples/notify/main.c
+          sed -i 's/-lSceNotification/-lSceNotification -lSceSystemService -lSceUserService/' samples/notify/Makefile
           PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk" make -C samples/notify
       - name: Collect ELF
         shell: bash
