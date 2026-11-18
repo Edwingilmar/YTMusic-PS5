@@ -32,7 +32,7 @@ jobs:
           find ps5-sdk/samples/http2_get -type f -name '*.elf' -print
           ELF=$(find ps5-sdk/samples/http2_get -type f -name '*.elf' | head -n 1)
           test -n "$ELF"
-          cp "$ELF" ScrewU2Music_NetworkTest.elf
+          cp "$ELF" ScrewU2Music.elf
       - uses: actions/upload-artifact@v4
         with:
           name: ScrewU2Music_network_probe_elf
