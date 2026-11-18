@@ -1,8 +1,10 @@
-name: Build ScrewU2Music v0.2
+name: Build ScrewU2Music
 on:
   workflow_dispatch:
   push:
     branches: [main]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -33,5 +35,16 @@ jobs:
           cp "$ELF" ScrewU2Music.elf
       - uses: actions/upload-artifact@v4
         with:
-          name: ScrewU2Music_v0_2_elf
+          name: ScrewU2Music_latest_elf
           path: ScrewU2Music.elf
+      - name: Publish stable latest ELF download
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! gh release view auto-latest >/dev/null 2>&1; then
+            gh release create auto-latest --title "ScrewU2Music latest" --notes "Rolling experimental ELF build from main. Not a functional native music player." --latest
+          fi
+          gh release upload auto-latest ScrewU2Music.elf --clobber
