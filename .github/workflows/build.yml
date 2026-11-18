@@ -1,4 +1,4 @@
-name: Build ScrewU2Music v0.4 visual test
+name: Build ScrewU2Music v0.5 UI server test
 on:
   workflow_dispatch:
   push:
@@ -16,14 +16,14 @@ jobs:
           sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make cmake pkg-config git python3 wget
       - name: Fetch PS5 payload SDK
         run: git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
-      - name: Build SDK and notification visual test
+      - name: Build SDK and v0.5 local UI server
         shell: bash
         run: |
           set -euxo pipefail
           cd ps5-sdk
           make
           make DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
-          cp ../visual_test.c samples/notify/main.c
+          cp ../ui_server_test.c samples/notify/main.c
           PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk" make -C samples/notify
       - name: Collect ELF
         shell: bash
@@ -35,7 +35,7 @@ jobs:
           cp "$ELF" ScrewU2Music.elf
       - uses: actions/upload-artifact@v4
         with:
-          name: ScrewU2Music_network_probe_elf
+          name: ScrewU2Music_v05_ui_server_elf
           path: ScrewU2Music.elf
       - name: Publish stable latest ELF download
         if: github.ref == 'refs/heads/main'
@@ -45,6 +45,6 @@ jobs:
         run: |
           set -euo pipefail
           if ! gh release view auto-latest >/dev/null 2>&1; then
-            gh release create auto-latest --title "ScrewU2Music latest" --notes "Visible notification diagnostic only. This is not yet a music player." --latest
+            gh release create auto-latest --title "ScrewU2Music latest" --notes "v0.5 local HTTP UI experiment only. Not an installer or music player." --latest
           fi
           gh release upload auto-latest ScrewU2Music.elf --clobber
