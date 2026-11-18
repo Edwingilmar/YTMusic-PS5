@@ -43,6 +43,7 @@ jobs:
           python3 -c 'import struct; f=open("eboot.elf","rb"); f.seek(16); assert struct.unpack("<H",f.read(2))[0] == 0xFE18, "Incorrect PS5 ELF type"'
           python3 make_fself.py --ptype fake --paid 0x3800000000000022 --app-version 0x07590001 --fw-version 0x07590001 eboot.elf SCUM00001/eboot.bin
           mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys"
+          cp "$GITHUB_WORKSPACE/ps5-app/stage_tile.py" "$GITHUB_WORKSPACE/tile-kit/stage_tile.py"
           cp payload.elf "$GITHUB_WORKSPACE/tile-kit/ScrewU2Music-install.elf"
           cp SCUM00001/eboot.bin "$GITHUB_WORKSPACE/tile-kit/SCUM00001/eboot.bin"
           cp SCUM00001/icon0.png "$GITHUB_WORKSPACE/tile-kit/SCUM00001/icon0.png"
