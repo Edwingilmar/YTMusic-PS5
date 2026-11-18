@@ -14,6 +14,7 @@ def main():
     p = argparse.ArgumentParser(description="Stage ScrewU2Music files on a PS5")
     p.add_argument("--host", required=True, help="PS5 local IP")
     p.add_argument("--port", type=int, default=2121)
+    p.add_argument("--finalize", action="store_true", help="Upload final system param.json after installer succeeds")
     args = p.parse_args()
     root = Path(__file__).resolve().parent / TITLE
     files = [
@@ -21,6 +22,8 @@ def main():
         (root / "sce_sys/param.json", f"/user/app/{TITLE}/sce_sys/param.json"),
         (root / "icon0.png", f"/user/app/{TITLE}/sce_sys/icon0.png"),
     ]
+    if args.finalize:
+        files = [(root / "sce_sys/param.json.system", f"/system_ex/app/{TITLE}/sce_sys/param.json")]
     for local, _ in files:
         if not local.is_file():
             raise SystemExit(f"Missing: {local}")
@@ -45,9 +48,11 @@ def main():
                 ftp.storbinary(f"STOR {remote}", f)
             print(f"Uploaded: {remote}")
         # Upstream SDK stages system param.json last, after executing installer.
+    if args.finalize:
+        print("Finalization upload complete. Check home-screen tile.")
+        return
     print("Staging complete. Next, run ScrewU2Music-install.elf on the PS5.")
-    print("After the installer succeeds, upload param.json.system to")
-    print(f"/system_ex/app/{TITLE}/sce_sys/param.json via FTP.")
+    print(f"After successful installer run: python3 stage_tile.py --host {args.host} --finalize")
     print("The home-screen tile still needs the UI server payload running.")
 
 if __name__ == "__main__":
