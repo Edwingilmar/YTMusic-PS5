@@ -37,11 +37,13 @@ jobs:
           python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00001/icon0.png",output_width=512,output_height=512)'
           # SDK sample links its eboot statically, which cannot resolve system services.
           # Build our browser-launching eboot dynamically and fake-sign the resulting SELF.
-          make payload.elf
           "$PS5_PAYLOAD_SDK/bin/prospero-clang" -Wall -g -lSceSystemService -lSceUserService -o eboot.elf eboot.c
           python3 -c 'import struct; p="eboot.elf"; f=open(p,"r+b"); f.seek(16); f.write(struct.pack("<H",0xFE18)); f.close()'
           python3 -c 'import struct; f=open("eboot.elf","rb"); f.seek(16); assert struct.unpack("<H",f.read(2))[0] == 0xFE18, "Incorrect PS5 ELF type"'
           python3 make_fself.py --ptype fake --paid 0x3800000000000022 --app-version 0x07590001 --fw-version 0x07590001 eboot.elf SCUM00001/eboot.bin
+          # Embed the signed eboot, icon and metadata directly in a single installer ELF.
+          cp "$GITHUB_WORKSPACE/ps5-app/one_click_installer.c" payload.c
+          make payload.elf
           mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys"
           cp "$GITHUB_WORKSPACE/ps5-app/stage_tile.py" "$GITHUB_WORKSPACE/tile-kit/stage_tile.py"
           cp payload.elf "$GITHUB_WORKSPACE/tile-kit/ScrewU2Music-install.elf"
@@ -51,6 +53,6 @@ jobs:
       - name: Upload installation kit
         uses: actions/upload-artifact@v4
         with:
-          name: ScrewU2Music-PS5-tile-kit-UNTESTED
+          name: ScrewU2Music-OneClick-Installer-EXPERIMENTAL
           path: tile-kit/
           if-no-files-found: error
