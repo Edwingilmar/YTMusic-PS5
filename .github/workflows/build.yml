@@ -11,7 +11,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential clang lld llvm make cmake pkg-config git python3
+          sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make cmake pkg-config git python3 wget
       - name: Fetch PS5 payload SDK
         run: git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
       - name: Build SDK and browser sample
@@ -20,8 +20,9 @@ jobs:
           set -euxo pipefail
           cd ps5-sdk
           make
+          make DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
           cp ../main.c samples/browser/main.c
-          PS5_PAYLOAD_SDK="$PWD" make -C samples/browser
+          PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk" make -C samples/browser
       - name: Collect ELF
         shell: bash
         run: |
