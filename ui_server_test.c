@@ -1,4 +1,4 @@
-/* ScrewU2Music v0.5: local UI launch experiment, PS5 payload SDK.
+/* ScrewU2Music v0.6: local UI launch experiment, PS5 payload SDK.
  * Serves a bundled HTML interface at 127.0.0.1:8787, then attempts to
  * open it with the PS5 browser. Browser support is firmware dependent.
  * This is NOT an installer, native app, or music playback implementation.
@@ -20,7 +20,7 @@ static void notify(const char *msg) {
     "{\"rawData\":{\"viewTemplateType\":\"InteractiveToastTemplateB\","
     "\"channelType\":\"Downloads\",\"useCaseId\":\"IDC\","
     "\"toastOverwriteType\":\"No\",\"isImmediate\":true,\"priority\":100,"
-    "\"viewData\":{\"message\":{\"body\":\"ScrewU2Music v0.5\"},"
+    "\"viewData\":{\"message\":{\"body\":\"ScrewU2Music v0.6\"},"
     "\"subMessage\":{\"body\":\"%s\"},\"actions\":[]},"
     "\"platformViews\":{\"previewDisabled\":{\"viewData\":{\"message\":{\"body\":\"ScrewU2Music\"}}}}},"
     "\"localNotificationId\":\"588193129\"}",msg);
@@ -33,9 +33,9 @@ static const char page[] =
 "nav{display:flex;gap:20px;margin:30px 0}.card{background:#19251d;border-radius:20px;padding:25px;margin:15px 0}</style>"
 "<h1>ScrewU2<b>Music</b></h1><nav><button onclick=\"show('Inicio')\">Inicio</button>"
 "<button onclick=\"show('Buscar')\">Buscar</button><button onclick=\"show('Biblioteca')\">Biblioteca</button></nav>"
-"<div class='card'><h2 id='tab'>Inicio</h2><p>Bienvenido a ScrewU2Music v0.5</p>"
+"<div class='card'><h2 id='tab'>Inicio</h2><p>Bienvenido a ScrewU2Music v0.6</p>"
 "<p>Interfaz experimental para PS5. Reproduccion aun no disponible.</p>"
-"<a href='https://music.youtube.com/'>YouTube Music</a></div>"
+"<p style='color:#b2c4b7'>YouTube Music no abre directamente en el navegador PS5. La integracion de reproduccion sigue pendiente.</p></div>"
 "<script>function show(t){document.getElementById('tab').textContent=t}</script></html>";
 int main(void) {
   int s=socket(AF_INET,SOCK_STREAM,0);
