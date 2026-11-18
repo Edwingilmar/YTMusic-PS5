@@ -7,6 +7,9 @@ on:
       - 'ps5-app/**'
       - 'assets/logo.svg'
       - '.github/workflows/build-tile.yml'
+concurrency:
+  group: screwu2music-release-publisher
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
