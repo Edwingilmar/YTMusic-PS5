@@ -21,7 +21,7 @@ jobs:
           cd ps5-sdk
           make
           cp ../main.c samples/browser/main.c
-          make -C samples/browser
+          PS5_PAYLOAD_SDK="$PWD" make -C samples/browser
       - name: Collect ELF
         shell: bash
         run: |
