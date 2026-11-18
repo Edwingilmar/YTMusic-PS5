@@ -12,17 +12,28 @@
 
 #define TITLE_ID "SCUM00001"
 #define INCASSET(name, file) \
-  __asm__(".section .rodata\n" \
-          ".global " #name "\n" \
-          ".global " #name "_end\n" \
-          ".global " #name "_size\n" \
-          ".align 16\n" \
-          #name ":\n" \
-          ".incbin \"" file "\"\n" \
-          #name "_end:\n" \
-          #name "_size:\n" \
-          ".quad " #name "_end - " #name "\n" \
-          ".previous\n"); \
+  __asm__(".section .rodata
+" \
+          ".global " #name "
+" \
+          ".global " #name "_end
+" \
+          ".global " #name "_size
+" \
+          ".align 16
+" \
+          #name ":
+" \
+          ".incbin \"" file "\"
+" \
+          #name "_end:
+" \
+          #name "_size:
+" \
+          ".quad " #name "_end - " #name "
+" \
+          ".previous
+"); \
   extern const uint8_t name[]; \
   extern const size_t name##_size;
 
@@ -30,7 +41,17 @@ INCASSET(eboot, "SCUM00001/eboot.bin")
 INCASSET(icon0, "SCUM00001/icon0.png")
 INCASSET(param, "SCUM00001/sce_sys/param.json")
 
-typedef struct app_launch_ctx {\n  uint32_t structsize;\n  uint32_t user_id;\n  uint32_t app_opt;\n  uint64_t crash_report;\n  uint32_t check_flag;\n} app_launch_ctx_t;\nint sceUserServiceInitialize(void *);\nint sceUserServiceGetForegroundUser(uint32_t *);\nint sceSystemServiceLaunchApp(const char *, char **, app_launch_ctx_t *);\nint sceAppInstUtilInitialize(void);
+typedef struct app_launch_ctx {
+  uint32_t structsize;
+  uint32_t user_id;
+  uint32_t app_opt;
+  uint64_t crash_report;
+  uint32_t check_flag;
+} app_launch_ctx_t;
+int sceUserServiceInitialize(void *);
+int sceUserServiceGetForegroundUser(uint32_t *);
+int sceSystemServiceLaunchApp(const char *, char **, app_launch_ctx_t *);
+int sceAppInstUtilInitialize(void);
 int sceAppInstUtilTerminate(void);
 int sceAppInstUtilAppInstallAll(void *);
 
@@ -44,7 +65,8 @@ static int write_asset(const char *p, const uint8_t *data, size_t size) {
   if (!f) { perror(p); return -1; }
   size_t n = fwrite(data, 1, size, f);
   int e = fclose(f);
-  if (n != size || e) { printf("Write failed: %s\n", p); return -1; }
+  if (n != size || e) { printf("Write failed: %s
+", p); return -1; }
   return 0;
 }
 static int register_app(void) {
@@ -57,7 +79,8 @@ static int register_app(void) {
 }
 int main(void) {
   int err = sceAppInstUtilInitialize();
-  if (err) { printf("AppInstUtil init failed: 0x%08x\n", err); return 1; }
+  if (err) { printf("AppInstUtil init failed: 0x%08x
+", err); return 1; }
   if (ensure_dir("/user/app/" TITLE_ID) ||
       ensure_dir("/user/app/" TITLE_ID "/sce_sys") ||
       write_asset("/user/app/" TITLE_ID "/eboot.bin", eboot, eboot_size) ||
@@ -67,18 +90,24 @@ int main(void) {
     return 2;
   }
   err = register_app();
-  if (err) printf("ScrewU2Music register failed: 0x%08x\n", err);
-  else printf("ScrewU2Music tile registered.\n");
+  if (err) printf("ScrewU2Music register failed: 0x%08x
+", err);
+  else printf("ScrewU2Music tile registered.
+");
   sceAppInstUtilTerminate();
   if (err) return 3;
   app_launch_ctx_t ctx = {0};
   err = sceUserServiceInitialize(0);
-  if (err) { printf("UserService init failed: 0x%08x\\n", err); return 4; }
+  if (err) { printf("UserService init failed: 0x%08x\
+", err); return 4; }
   err = sceUserServiceGetForegroundUser(&ctx.user_id);
-  if (err) { printf("Foreground user failed: 0x%08x\\n", err); return 5; }
+  if (err) { printf("Foreground user failed: 0x%08x\
+", err); return 5; }
   char *args[] = {0};
   err = sceSystemServiceLaunchApp(TITLE_ID, args, &ctx);
-  if (err < 0) { printf("Auto launch failed: 0x%08x\\n", err); return 6; }
-  printf("ScrewU2Music launch requested.\\n");
+  if (err < 0) { printf("Auto launch failed: 0x%08x\
+", err); return 6; }
+  printf("ScrewU2Music launch requested.\
+");
   return 0;
 }
