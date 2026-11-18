@@ -30,7 +30,7 @@ INCASSET(eboot, "SCUM00001/eboot.bin")
 INCASSET(icon0, "SCUM00001/icon0.png")
 INCASSET(param, "SCUM00001/sce_sys/param.json")
 
-int sceAppInstUtilInitialize(void);
+typedef struct app_launch_ctx {\n  uint32_t structsize;\n  uint32_t user_id;\n  uint32_t app_opt;\n  uint64_t crash_report;\n  uint32_t check_flag;\n} app_launch_ctx_t;\nint sceUserServiceInitialize(void *);\nint sceUserServiceGetForegroundUser(uint32_t *);\nint sceSystemServiceLaunchApp(const char *, char **, app_launch_ctx_t *);\nint sceAppInstUtilInitialize(void);
 int sceAppInstUtilTerminate(void);
 int sceAppInstUtilAppInstallAll(void *);
 
