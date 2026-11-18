@@ -42,13 +42,13 @@ int main(void) {
   if(s<0){notify("ERROR: no se pudo abrir socket");return 1;}
   int yes=1;setsockopt(s,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes));
   struct sockaddr_in a;memset(&a,0,sizeof(a));a.sin_family=AF_INET;
-  a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);a.sin_port=htons(PORT);
+  a.sin_addr.s_addr=htonl(INADDR_ANY);a.sin_port=htons(PORT);
   if(bind(s,(struct sockaddr*)&a,sizeof(a))<0){notify("ERROR: puerto 8787 ocupado");close(s);return 2;}
   if(listen(s,4)<0){notify("ERROR: listen fallo");close(s);return 3;}
-  notify("Servidor local listo: puerto 8787");
+  notify("Servidor listo: PS5 IP puerto 8787");
   sceUserServiceInitialize(NULL);
   int rc=sceSystemServiceLaunchWebBrowser("http://127.0.0.1:8787/",NULL);
-  if(rc)notify("Browser no disponible; probar IP:8787 desde celular");
+  if(rc)notify("Browser fallo; abrir IP de PS5 puerto 8787 en celular");
   for(;;){
     int c=accept(s,NULL,NULL);if(c<0)continue;
     char req[1024];ssize_t n=recv(c,req,sizeof(req)-1,0);
