@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="ScrewU2Music logo">
+<defs><radialGradient id="bg"><stop stop-color="#101b13"/><stop offset="1" stop-color="#000"/></radialGradient><linearGradient id="green" x2="0" y2="1"><stop stop-color="#8aff75"/><stop offset=".5" stop-color="#21ed4d"/><stop offset="1" stop-color="#08a82f"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="13"/></filter></defs>
+<rect width="1024" height="1024" fill="url(#bg)"/>
+<circle cx="512" cy="490" r="438" fill="none" stroke="#19f64b" stroke-width="22" opacity=".65" filter="url(#glow)"/>
+<circle cx="512" cy="490" r="438" fill="none" stroke="url(#green)" stroke-width="12"/>
+<path d="M320 421v-43c0-112 86-198 192-198s192 86 192 198v43" fill="none" stroke="#eee" stroke-width="36" stroke-linecap="round"/>
+<rect x="279" y="396" width="71" height="157" rx="32" fill="url(#green)"/><rect x="674" y="396" width="71" height="157" rx="32" fill="url(#green)"/>
+<path d="M446 358 Q429 348 429 371 V565 Q429 591 452 578 L616 480 Q638 467 616 454Z" fill="url(#green)"/>
+<g fill="#13d83c"><rect x="171" y="439" width="18" height="68"/><rect x="202" y="417" width="18" height="112"/><rect x="233" y="448" width="18" height="50"/><rect x="773" y="448" width="18" height="50"/><rect x="804" y="417" width="18" height="112"/><rect x="835" y="439" width="18" height="68"/></g>
+<text x="512" y="705" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="88" fill="#f4f4f4">ScrewU2<tspan fill="#27f453">Music</tspan></text>
+<path d="M275 741 Q512 711 752 741" fill="none" stroke="#27f453" stroke-width="10" stroke-linecap="round"/>
+</svg>
