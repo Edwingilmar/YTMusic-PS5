@@ -35,7 +35,13 @@ jobs:
           cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00001/sce_sys/param.json
           cp SCUM00001/sce_sys/param.json SCUM00001/sce_sys/param.json.system
           python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00001/icon0.png",output_width=512,output_height=512)'
-          make
+          # SDK sample links its eboot statically, which cannot resolve system services.
+          # Build our browser-launching eboot dynamically and fake-sign the resulting SELF.
+          make payload.elf
+          "$PS5_PAYLOAD_SDK/bin/prospero-clang" -Wall -g -lSceSystemService -lSceUserService -o eboot.elf eboot.c
+          printf '\\x18\\xfe' | dd of=eboot.elf bs=1 seek=16 count=2 conv=notrunc
+          AUTHINFO="00 00 00 00 00 00 00 00 00 00 00 00 00 1C 00 40 00 FF 00 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 00 40 00 40 00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 08 00 40 FF FF 00 00 00 F0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+          python3 make_fself.py --ptype fake --paid 0x3800000000000022 --auth-info "$AUTHINFO" --app-version 0x07590001 --fw-version 0x07590001 eboot.elf SCUM00001/eboot.bin
           mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys"
           cp payload.elf "$GITHUB_WORKSPACE/tile-kit/ScrewU2Music-install.elf"
           cp SCUM00001/eboot.bin "$GITHUB_WORKSPACE/tile-kit/SCUM00001/eboot.bin"
