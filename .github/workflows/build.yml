@@ -1,4 +1,4 @@
-name: Build ScrewU2Music
+name: Build ScrewU2Music native network probe
 on:
   workflow_dispatch:
   push:
@@ -16,26 +16,26 @@ jobs:
           sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make cmake pkg-config git python3 wget
       - name: Fetch PS5 payload SDK
         run: git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
-      - name: Build SDK and browser sample
+      - name: Build SDK and native HTTP2 probe
         shell: bash
         run: |
           set -euxo pipefail
           cd ps5-sdk
           make
           make DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
-          cp ../main.c samples/browser/main.c
-          PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk" make -C samples/browser
+          cp ../network_probe.c samples/http2_get/main.c
+          PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk" make -C samples/http2_get
       - name: Collect ELF
         shell: bash
         run: |
           set -euo pipefail
-          find ps5-sdk/samples/browser -type f -name '*.elf' -print
-          ELF=$(find ps5-sdk/samples/browser -type f -name '*.elf' | head -n 1)
+          find ps5-sdk/samples/http2_get -type f -name '*.elf' -print
+          ELF=$(find ps5-sdk/samples/http2_get -type f -name '*.elf' | head -n 1)
           test -n "$ELF"
-          cp "$ELF" ScrewU2Music.elf
+          cp "$ELF" ScrewU2Music_NetworkTest.elf
       - uses: actions/upload-artifact@v4
         with:
-          name: ScrewU2Music_latest_elf
+          name: ScrewU2Music_network_probe_elf
           path: ScrewU2Music.elf
       - name: Publish stable latest ELF download
         if: github.ref == 'refs/heads/main'
@@ -45,6 +45,6 @@ jobs:
         run: |
           set -euo pipefail
           if ! gh release view auto-latest >/dev/null 2>&1; then
-            gh release create auto-latest --title "ScrewU2Music latest" --notes "Rolling experimental ELF build from main. Not a functional native music player." --latest
+            gh release create auto-latest --title "ScrewU2Music latest" --notes "Native HTTPS diagnostic only. This is not yet a music player." --latest
           fi
           gh release upload auto-latest ScrewU2Music.elf --clobber
