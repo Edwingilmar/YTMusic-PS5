@@ -38,14 +38,3 @@ jobs:
         with:
           name: ScrewU2Music_v06_ui_server_elf
           path: ScrewU2Music.elf
-      - name: Publish stable latest ELF download
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! gh release view auto-latest >/dev/null 2>&1; then
-            gh release create auto-latest --title "ScrewU2Music latest" --notes "v0.6 local HTTP UI experiment only. Not an installer or music player." --latest
-          fi
-          gh release upload auto-latest ScrewU2Music.elf --clobber
