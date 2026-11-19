@@ -70,9 +70,12 @@ int main(void) {
   if (err) { printf("AppInstUtil init failed: 0x%08x\n", err); return 1; }
   if (ensure_dir("/user/app/" TITLE_ID) ||
       ensure_dir("/user/app/" TITLE_ID "/sce_sys") ||
-      write_asset("/user/app/" TITLE_ID "/eboot.bin", eboot, eboot_size) ||
+      ensure_dir("/system_ex/app/" TITLE_ID) ||
+      ensure_dir("/system_ex/app/" TITLE_ID "/sce_sys") ||
+      write_asset("/system_ex/app/" TITLE_ID "/eboot.bin", eboot, eboot_size) ||
       write_asset("/user/app/" TITLE_ID "/sce_sys/icon0.png", icon0, icon0_size) ||
-      write_asset("/user/app/" TITLE_ID "/sce_sys/param.json", param, param_size)) {
+      write_asset("/user/app/" TITLE_ID "/sce_sys/param.json", param, param_size) ||
+      write_asset("/system_ex/app/" TITLE_ID "/sce_sys/param.json", param, param_size)) {
     sceAppInstUtilTerminate();
     return 2;
   }
