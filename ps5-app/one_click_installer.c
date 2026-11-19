@@ -137,15 +137,10 @@ int main(void) {
   sceAppInstUtilTerminate();
   if (err) return 3;
   printf("ScrewU2Music media tile installed. Start the tile while this payload is running.\n");
-  pthread_t http_thread;
-  err=pthread_create(&http_thread,NULL,serve_ui,NULL);
-  if(err){printf("HTTP thread failed: %d\\n",err);return 5;}
-  for(int i=0;i<300 && server_state==0;i++)usleep(10000);
-  if(server_state!=1){printf("HTTP server unavailable: %d\\n",server_state);return 6;}
+  /* Direct YouTube Music launch: no local proxy, PSN URL or redirect page. */
   err = sceUserServiceInitialize(0);
-  if (err) { printf("UserService init failed: 0x%08x\n", err); return 4; }
-  err = sceSystemServiceLaunchWebBrowser("http://127.0.0.1:8080/", NULL);
-  if (err) printf("Browser launch failed: 0x%08x\n", err);
-  pthread_join(http_thread,NULL);
+  if (err) { printf("UserService init failed: 0x%08x\\n", err); return 4; }
+  err = sceSystemServiceLaunchWebBrowser("https://music.youtube.com/", NULL);
+  if (err) { printf("Direct YouTube Music launch failed: 0x%08x\\n", err); return 5; }
   return 0;
 }
