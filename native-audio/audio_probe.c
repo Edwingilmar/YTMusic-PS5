@@ -6,6 +6,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <stdlib.h>
+static void trace(const char *fmt, ...) {
+  char line[256]; va_list ap; va_start(ap,fmt);
+  int n=vsnprintf(line,sizeof(line),fmt,ap); va_end(ap);
+  if(n<=0)return;
+  int fd=open("/data/ScrewU2Music-AudioProbe.log",O_WRONLY|O_CREAT|O_APPEND,0666);
+  if(fd<0) fd=open("/user/home/ScrewU2Music-AudioProbe.log",O_WRONLY|O_CREAT|O_APPEND,0666);
+  if(fd>=0){write(fd,line,(size_t)(n<255?n:255));close(fd);}
+  printf("%s",line);
+}
+
 
 int sceUserServiceInitialize(void *);
 int sceUserServiceGetForegroundUser(int *);
@@ -22,19 +35,23 @@ int sceAudioOutClose(int handle);
 #define TEST_SECONDS 3
 
 int main(void) {
-    printf("[ScrewU2Music] Native audio hardware probe starting\\n");
+    trace("AudioProbe start\\n");
+    trace("before sceAudioOutInit\\n");
     int err = sceAudioOutInit();
-    if (err < 0) { printf("AudioOut init failed: %d\\n", err); return 1; }
+    trace("sceAudioOutInit returned %d\\n",err);
+    if (err < 0) { trace("AudioOut init failed: %d\\n", err); return 1; }
     int userId = -1;
     err = sceUserServiceInitialize(NULL);
-    printf("[ScrewU2Music] UserService init: %d\\n", err);
+    trace("[ScrewU2Music] UserService init: %d\\n", err);
     if (err == 0) {
         err = sceUserServiceGetForegroundUser(&userId);
-        printf("[ScrewU2Music] Foreground user: %d (status %d)\\n", userId, err);
+        trace("[ScrewU2Music] Foreground user: %d (status %d)\\n", userId, err);
     }
-    if (userId < 0) { printf("No foreground user found\\n"); return 4; }
+    if (userId < 0) { trace("No foreground user found\\n"); return 4; }
+    trace("before sceAudioOutOpen\\n");
     int handle = sceAudioOutOpen(userId, 0, 0, AUDIO_FRAMES, SAMPLE_RATE, 0);
-    if (handle < 0) { printf("AudioOut open failed: %d\\n", handle); return 2; }
+    trace("sceAudioOutOpen returned %d\\n",handle);
+    if (handle < 0) { trace("AudioOut open failed: %d\\n", handle); return 2; }
     int16_t pcm[AUDIO_FRAMES * 2];
     uint32_t phase = 0;
     /* Triangle wave generated entirely locally; no streamed or copyrighted media. */
@@ -48,9 +65,9 @@ int main(void) {
             phase += 440;
         }
         err = sceAudioOutOutput(handle, pcm);
-        if (err < 0) { printf("AudioOut output failed: %d\\n", err); sceAudioOutClose(handle); return 3; }
+        if (err < 0) { trace("AudioOut output failed: %d\\n", err); sceAudioOutClose(handle); return 3; }
     }
     sceAudioOutClose(handle);
-    printf("[ScrewU2Music] Native audio probe complete\\n");
+    trace("[ScrewU2Music] Native audio probe complete\\n");
     return 0;
 }
