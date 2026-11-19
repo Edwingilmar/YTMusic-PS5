@@ -45,7 +45,7 @@ typedef struct app_launch_ctx {
 int sceUserServiceInitialize(void *);
 int sceUserServiceGetForegroundUser(uint32_t *);
 int sceSystemServiceLaunchApp(const char *, char **, app_launch_ctx_t *);
-int sceSystemServiceLaunchWebBrowser(const char *);
+int sceSystemServiceLaunchWebBrowser(const char *, void *);
 int sceAppInstUtilInitialize(void);
 int sceAppInstUtilTerminate(void);
 int sceAppInstUtilAppInstallAll(void *);
@@ -92,17 +92,18 @@ int main(void) {
   sceAppInstUtilTerminate();
   if (err) return 3;
   app_launch_ctx_t ctx = {0};
+  ctx.structsize = sizeof(ctx);
   err = sceUserServiceInitialize(0);
   if (err) { printf("UserService init failed: 0x%08x\\n", err); return 4; }
   err = sceUserServiceGetForegroundUser(&ctx.user_id);
-  if (err) { printf("Foreground user failed: 0x%08x\\n", err); return 5; }
+  if (err) { printf("Foreground user unavailable: 0x%08x\\n", err); }
   char *args[] = {0};
-  err = sceSystemServiceLaunchApp(TITLE_ID, args, &ctx);
+  err = sceSystemServiceLaunchApp(TITLE_ID, args, err ? 0 : &ctx);
   if (err < 0) { printf("Auto launch failed: 0x%08x\\n", err); return 6; }
   printf("ScrewU2Music launch requested.\\n");
   /* The tile starts the embedded HTTP server; give it time to bind. */
   sleep(2);
-  err = sceSystemServiceLaunchWebBrowser("http://127.0.0.1:8080/");
+  err = sceSystemServiceLaunchWebBrowser("http://127.0.0.1:8787/", 0);
   if (err < 0) {
     printf("Browser launch failed: 0x%08x\\n", err);
     return 7;
