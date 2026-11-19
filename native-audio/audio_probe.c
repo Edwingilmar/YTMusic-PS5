@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+int sceUserServiceInitialize(void *);
+int sceUserServiceGetForegroundUser(int *);
 int sceAudioOutInit(void);
 int sceAudioOutOpen(int userId, int type, int index, uint32_t len, uint32_t freq, uint32_t param);
 int sceAudioOutOutput(int handle, const void *ptr);
@@ -23,7 +25,15 @@ int main(void) {
     printf("[ScrewU2Music] Native audio hardware probe starting\\n");
     int err = sceAudioOutInit();
     if (err < 0) { printf("AudioOut init failed: %d\\n", err); return 1; }
-    int handle = sceAudioOutOpen(0, 0, 0, AUDIO_FRAMES, SAMPLE_RATE, 0);
+    int userId = -1;
+    err = sceUserServiceInitialize(NULL);
+    printf("[ScrewU2Music] UserService init: %d\\n", err);
+    if (err == 0) {
+        err = sceUserServiceGetForegroundUser(&userId);
+        printf("[ScrewU2Music] Foreground user: %d (status %d)\\n", userId, err);
+    }
+    if (userId < 0) { printf("No foreground user found\\n"); return 4; }
+    int handle = sceAudioOutOpen(userId, 0, 0, AUDIO_FRAMES, SAMPLE_RATE, 0);
     if (handle < 0) { printf("AudioOut open failed: %d\\n", handle); return 2; }
     int16_t pcm[AUDIO_FRAMES * 2];
     uint32_t phase = 0;
