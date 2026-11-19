@@ -57,7 +57,8 @@ static void respond(int fd) {
     send_all(fd,type,str_len(type));
     send_all(fd,"Content-Length: ",16);
     send_all(fd,digits,nd);
-    send_all(fd,"\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n",52);
+    const char *tail="\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n";
+    send_all(fd,tail,str_len(tail));
     if(!head)send_all(fd,body,len);
 }
 int main(void) {
