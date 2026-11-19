@@ -90,7 +90,7 @@ jobs:
           data = json.loads(catalog.read_text())
           item = next(p for p in data['payloads'] if p['id'] == 'screwu2music')
           item['version'] = '1.0.' + os.environ['BUILD_NUMBER']
-          item['url'] = 'https://raw.githubusercontent.com/Edwingilmar/YTMusic-PS5/main/catalog/ScrewU2Music.elf'
+          item['url'] = 'https://github.com/Edwingilmar/YTMusic-PS5/releases/download/auto-latest/ScrewU2Music.elf'
           item['last_update'] = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
           item['checksum'] = hashlib.sha256(pathlib.Path('ScrewU2Music.elf').read_bytes()).hexdigest()
           catalog.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
