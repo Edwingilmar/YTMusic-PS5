@@ -27,7 +27,7 @@ jobs:
           export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
           cd ps5-sdk/samples/install_app
           cp "$GITHUB_WORKSPACE/native-audio/audio_probe.c" payload.c
-          make payload.elf LDADD="-lSceAudioOut"
+          make payload.elf LDADD="-lSceAudioOut -lSceUserService"
           test -s payload.elf
           mkdir -p "$GITHUB_WORKSPACE/native-audio-out"
           cp payload.elf "$GITHUB_WORKSPACE/native-audio-out/ScrewU2Music-AudioProbe.elf"
