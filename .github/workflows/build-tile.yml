@@ -37,6 +37,8 @@ jobs:
           from pathlib import Path
           page = Path("../../../prototype/index.html").read_bytes()
           Path("ui_page.h").write_text("static const char page[] = {"+",".join(str(b) for b in page)+",0};\n")
+          logo = Path("../../../assets/logo.svg").read_bytes()
+          Path("logo_asset.h").write_text("static const char logo_svg[] = {"+",".join(str(b) for b in logo)+",0};\\n".replace("\\n","\n"))
           PY
           sed -i 's/TITLE_ID := FAKE02932/TITLE_ID := SCUM00002/' Makefile
           mkdir -p SCUM00002/sce_sys
