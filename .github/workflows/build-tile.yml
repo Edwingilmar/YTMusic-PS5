@@ -43,25 +43,10 @@ jobs:
           cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00001/sce_sys/param.json
           cp SCUM00001/sce_sys/param.json SCUM00001/sce_sys/param.json.system
           python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00001/icon0.png",output_width=512,output_height=512)'
-          # SDK sample links its eboot statically, which cannot resolve system services.
-          # Build our browser-launching eboot dynamically and fake-sign the resulting SELF.
-          "$PS5_PAYLOAD_SDK/bin/prospero-clang" -Wall -g -lSceSystemService -lSceUserService -o eboot.elf eboot.c
-          python3 -c 'import struct; p="eboot.elf"; f=open(p,"r+b"); f.seek(16); f.write(struct.pack("<H",0xFE18)); f.close()'
-          python3 -c 'import struct; f=open("eboot.elf","rb"); f.seek(16); assert struct.unpack("<H",f.read(2))[0] == 0xFE18, "Incorrect PS5 ELF type"'
-          # Use the same auth-info metadata as the SDK's install_app sample.
-          python3 - <<'PY'
-          from pathlib import Path
-          import re, subprocess
-          mk = Path("Makefile").read_text()
-          match = re.search(r"AUTHINFO\s*:=\s*((?:[^\n]*\\\n)*[^\n]*)", mk)
-          if not match:
-              raise SystemExit("SDK AUTHINFO not found")
-          auth = match.group(1).replace("\\\n", " ").strip()
-          subprocess.run(["python3", "make_fself.py", "--ptype", "fake",
-                          "--paid", "0x3800000000000022", "--auth-info", auth,
-                          "--app-version", "0x07590001", "--fw-version", "0x07590001",
-                          "eboot.elf", "SCUM00001/eboot.bin"], check=True)
-          PY
+          # Boot diagnostic: use SDK's original static linker and SELF recipe.
+          # The prior dynamic ELF header rewrite was not a valid native title build.
+          cp "$GITHUB_WORKSPACE/ps5-app/boot_probe.c" eboot.c
+          make SCUM00001/eboot.bin
           # Embed the signed eboot, icon and metadata directly in a single installer ELF.
           cp "$GITHUB_WORKSPACE/ps5-app/one_click_installer.c" payload.c
           sed -i "s/SCREWU2_BUILD \"local\"/SCREWU2_BUILD \"${GITHUB_RUN_NUMBER}\"/" payload.c
