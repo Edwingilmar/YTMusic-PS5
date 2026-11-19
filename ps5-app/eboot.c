@@ -1,91 +1,84 @@
-/* ScrewU2Music: local HTML server for PS5 browser.
- * Built as the installed title's eboot, not the installer payload.
+/* ScrewU2Music: standalone PS5 fake-SELF HTTP server.
+ * install_app/eboot.x is a static, freestanding entry point: no libc or
+ * imported Sce libraries are available in this eboot.
  */
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-#define PORT 8080
-#define REQUEST_SIZE 2048
-int sceUserServiceInitialize(void *);
-int sceSystemServiceLaunchWebBrowser(const char *, void *);
+#include <stddef.h>
+#include <stdint.h>
 #include "ui_page.h"
 
-static int send_all(int fd, const void *data, size_t size) {
-    const char *p = (const char *)data;
-    while (size) {
-        ssize_t n = send(fd, p, size, 0);
-        if (n < 0 && errno == EINTR) continue;
-        if (n <= 0) return -1;
-        p += n;
-        size -= (size_t)n;
+#define PORT 8080
+#define AF_INET 2
+#define SOCK_STREAM 1
+#define SOL_SOCKET 0xffff
+#define SO_REUSEADDR 4
+
+static long syscall6(long n,long a,long b,long c,long d,long e,long f) {
+    register long r10 __asm__("r10")=d;
+    register long r8 __asm__("r8")=e;
+    register long r9 __asm__("r9")=f;
+    unsigned long ret;
+    unsigned char carry;
+    __asm__ volatile("syscall" : "=a"(ret),"=@ccc"(carry),"+r"(r10),"+r"(r8),"+r"(r9)
+      : "a"(n),"D"(a),"S"(b),"d"(c) : "rcx","r11","memory");
+    return carry ? -(long)ret : (long)ret;
+}
+static long sc(long n,long a,long b,long c,long d,long e,long f) {
+    return syscall6(n,a,b,c,d,e,f);
+}
+static size_t str_len(const char *s) {size_t n=0;while(s[n])n++;return n;}
+static int starts(const char *s,const char *p) {
+    while(*p)if(*s++!=*p++)return 0;
+    return 1;
+}
+static void send_all(int fd,const char *s,size_t n) {
+    while(n) {
+        long sent=sc(133,fd,(long)s,n,0,0,0); /* sendto */
+        if(sent<=0)return;
+        s+=sent;n-=(size_t)sent;
     }
-    return 0;
 }
-
-static void respond(int client) {
-    char req[REQUEST_SIZE];
-    ssize_t n = recv(client, req, sizeof(req) - 1, 0);
-    if (n <= 0) return;
-    req[n] = 0;
-    const int is_get = !strncmp(req, "GET / ", 6) ||
-                       !strncmp(req, "GET /index.html ", 16);
-    const int is_head = !strncmp(req, "HEAD / ", 7) ||
-                        !strncmp(req, "HEAD /index.html ", 17);
-    const char *body = is_get || is_head ? page : "Not found\n";
-    size_t length = is_get || is_head ? sizeof(page) - 1 : 10;
-    char header[320];
-    int h = snprintf(header, sizeof(header),
-        "HTTP/1.1 %s\r\n"
-        "Content-Type: %s\r\n"
-        "Content-Length: %zu\r\n"
-        "Cache-Control: no-store\r\n"
-        "Connection: close\r\n\r\n",
-        is_get || is_head ? "200 OK" : "404 Not Found",
-        is_get || is_head ? "text/html; charset=utf-8" : "text/plain",
-        length);
-    if (h <= 0 || (size_t)h >= sizeof(header)) return;
-    if (send_all(client, header, (size_t)h)) return;
-    if (!is_head) send_all(client, body, length);
+static void respond(int fd) {
+    char req[2048];
+    long n=sc(29,fd,(long)req,sizeof(req)-1,0,0,0); /* recvfrom */
+    if(n<=0)return;
+    req[n]=0;
+    int head=starts(req,"HEAD / ")||starts(req,"HEAD /index.html ");
+    int ok=head||starts(req,"GET / ")||starts(req,"GET /index.html ");
+    const char *body=ok?page:"Not found\n";
+    size_t len=ok?sizeof(page)-1:10;
+    /* Content-Length is computed without libc. */
+    char digits[32],reversed[32];size_t nd=0;
+    size_t v=len;
+    do {reversed[nd++]=(char)('0'+v%10);v/=10;}while(v);
+    for(size_t i=0;i<nd;i++)digits[i]=reversed[nd-i-1];
+    const char *status=ok?"HTTP/1.1 200 OK\r\n":"HTTP/1.1 404 Not Found\r\n";
+    send_all(fd,status,str_len(status));
+    const char *type=ok?"Content-Type: text/html; charset=utf-8\r\n":"Content-Type: text/plain\r\n";
+    send_all(fd,type,str_len(type));
+    send_all(fd,"Content-Length: ",16);
+    send_all(fd,digits,nd);
+    send_all(fd,"\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n",52);
+    if(!head)send_all(fd,body,len);
 }
-
 int main(void) {
-    int server = socket(AF_INET, SOCK_STREAM, 0);
-    if (server < 0) { perror("socket"); return 1; }
-    int reuse = 1;
-    setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-    struct sockaddr_in address;
-    memset(&address, 0, sizeof(address));
-    address.sin_family = AF_INET;
-    address.sin_port = htons(PORT);
-    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    if (bind(server, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        perror("bind"); close(server); return 2;
+    /* FreeBSD/PS5 sockaddr_in layout: length, family, port, IPv4. */
+    struct {uint8_t len,family;uint16_t port;uint32_t ip;uint8_t zero[8];} addr=
+      {16,AF_INET,(uint16_t)((PORT>>8)|(PORT<<8)),0x0100007f,{0}};
+    long server=sc(97,AF_INET,SOCK_STREAM,0,0,0,0); /* socket */
+    if(server<0)return 1;
+    int yes=1;
+    sc(105,server,SOL_SOCKET,SO_REUSEADDR,(long)&yes,sizeof(yes),0);
+    if(sc(104,server,(long)&addr,sizeof(addr),0,0,0)<0)return 2; /* bind */
+    if(sc(106,server,8,0,0,0,0)<0)return 3; /* listen */
+    for(;;) {
+        long client=sc(30,server,0,0,0,0,0); /* accept */
+        if(client<0)continue;
+        respond((int)client);
+        sc(6,client,0,0,0,0,0); /* close */
     }
-    if (listen(server, 8) < 0) {
-        perror("listen"); close(server); return 3;
-    }
-    fprintf(stderr, "[ScrewU2Music] HTTP listening on 127.0.0.1:%d\n", PORT);
-    int user_rc = sceUserServiceInitialize(NULL);
-    fprintf(stderr, "[ScrewU2Music] UserService: 0x%x\n", user_rc);
-    int browser_rc = sceSystemServiceLaunchWebBrowser("http://127.0.0.1:8080/", NULL);
-    fprintf(stderr, "[ScrewU2Music] Browser launch: 0x%x\n", browser_rc);
-    /* Keep the app alive even if the browser request is rejected.
-       The loop exits when the PS5 terminates this title. */
-    for (;;) {
-        int client = accept(server, NULL, NULL);
-        if (client < 0) {
-            if (errno == EINTR) continue;
-            perror("accept");
-            break;
-        }
-        respond(client);
-        close(client);
-    }
-    close(server);
-    return 4;
+}
+void _start(void) {
+    long rc=main();
+    sc(1,rc,0,0,0,0,0);
+    __builtin_trap();
 }
