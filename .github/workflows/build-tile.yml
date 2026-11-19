@@ -141,9 +141,16 @@ jobs:
           export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
           cd ps5-sdk/samples/install_app
           python3 "$GITHUB_WORKSPACE/ps5-app/build_native_installer.py" "$GITHUB_WORKSPACE/maxd-upstream/dist/PPSA99991.zip" payload.c "$PWD"
-          make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet"
+          { make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet" 2>&1 | tee "$GITHUB_WORKSPACE/native-elf-build.log"; }
           cp payload.elf "$GITHUB_WORKSPACE/ScrewU2Music-Native.elf"
           test -s "$GITHUB_WORKSPACE/ScrewU2Music-Native.elf"
+      - name: Upload compiler diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScrewU2Music-ELF-build-errors
+          path: native-elf-build.log
+          if-no-files-found: warn
       - name: Upload single integrated installer
         uses: actions/upload-artifact@v4
         with:
