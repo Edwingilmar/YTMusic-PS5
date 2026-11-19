@@ -2,7 +2,7 @@ name: Build ScrewU2Music PS5 tile installation kit
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/embedded-music-player]
+    branches: [main, feature/embedded-music-player, feature/nzik-companion-integration]
     paths:
       - 'ps5-app/**'
       - 'assets/logo.svg'
@@ -58,6 +58,19 @@ jobs:
           cp SCUM00002/eboot.bin "$GITHUB_WORKSPACE/tile-kit/SCUM00002/eboot.bin"
           cp SCUM00002/icon0.png "$GITHUB_WORKSPACE/tile-kit/SCUM00002/icon0.png"
           cp SCUM00002/sce_sys/param.json* "$GITHUB_WORKSPACE/tile-kit/SCUM00002/sce_sys/"
+      - name: Bundle N-Zik native YouTube Music companion (separate payload)
+        if: github.ref == 'refs/heads/feature/nzik-companion-integration'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p tile-kit/N-Zik-companion
+          curl --fail --location --retry 3 \
+            https://github.com/DevVeda/n-zik-ps5/releases/download/v0.2.0/n-zik-ps5.elf \
+            --output tile-kit/N-Zik-companion/n-zik-ps5.elf
+          test "$(stat -c%s tile-kit/N-Zik-companion/n-zik-ps5.elf)" -eq 1951440
+          cp integration/NZIK-INSTALL.md tile-kit/N-Zik-companion/README.md
+          curl --fail --location https://raw.githubusercontent.com/DevVeda/n-zik-ps5/main/LICENSE \
+            --output tile-kit/N-Zik-companion/LICENSE-GPL-3.0
       - name: Upload installation kit
         uses: actions/upload-artifact@v4
         with:
