@@ -8,7 +8,7 @@
       "filename": "ScrewU2Music.elf",
       "url": "https://raw.githubusercontent.com/Edwingilmar/YTMusic-PS5/main/catalog/ScrewU2Music.elf",
       "description": "Experimental PS5 installer: installs and attempts to launch ScrewU2Music. Music playback not implemented.",
-      "version": "1.0.29",
+      "version": "1.0.30",
       "category": "Media",
       "icon_key": "screwu2music-logo",
       "source": "https://github.com/Edwingilmar/YTMusic-PS5",
