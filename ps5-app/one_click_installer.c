@@ -11,6 +11,10 @@
 #include <ps5/kernel.h>
 
 #define TITLE_ID "SCUM00001"
+#ifndef SCREWU2_BUILD
+#define SCREWU2_BUILD "local"
+#endif
+static const char screwu2_build_id[] __attribute__((used)) = "ScrewU2Music-build:" SCREWU2_BUILD;
 #define INCASSET(name, file) \
   __asm__(".section .rodata\n" \
           ".global " #name "\n" \
@@ -66,6 +70,7 @@ static int register_app(void) {
   return sceAppInstUtilAppInstallAll(0);
 }
 int main(void) {
+  printf("ScrewU2Music installer build: %s\n", screwu2_build_id);
   int err = sceAppInstUtilInitialize();
   if (err) { printf("AppInstUtil init failed: 0x%08x\n", err); return 1; }
   if (ensure_dir("/user/app/" TITLE_ID) ||
