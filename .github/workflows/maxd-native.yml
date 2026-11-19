@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Checkout GPL native YouTube engine source
         run: |
-          git clone --recursive https://github.com/HandshakeHackin/youtube-maxd.git maxd-upstream
+          git clone https://github.com/HandshakeHackin/youtube-maxd.git maxd-upstream
           cd maxd-upstream
           git rev-parse HEAD | tee "$GITHUB_WORKSPACE/MAXD_SOURCE_COMMIT"
       - name: Install native PS5 toolchain and media dependencies
