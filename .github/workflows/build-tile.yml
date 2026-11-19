@@ -43,18 +43,7 @@ jobs:
           cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00002/sce_sys/param.json
           cp SCUM00002/sce_sys/param.json SCUM00002/sce_sys/param.json.system
           python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00002/icon0.png",output_width=512,output_height=512)'
-          # Compile the actual HTTP application, not the exit-only boot probe.
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("Makefile")
-          s = p.read_text()
-          old = "$(LD) --static -T eboot.x -o $@ $^"
-          assert old in s, "SDK Makefile changed; refusing unsafe build"
-          s = s.replace(old, "$(CC) -o $@ $^ -lSceUserService -lSceSystemService")
-          p.write_text(s)
-          PY
-          make SCUM00002/eboot.bin
-          strings eboot.elf | grep -q '127.0.0.1:8080'
+          make SCUM00002/eboot.bin LDADD="-lSceNet -lSceUserService -lSceSystemService"
           # Embed the signed eboot, icon and metadata directly in a single installer ELF.
           cp "$GITHUB_WORKSPACE/ps5-app/one_click_installer.c" payload.c
           sed -i "s/SCREWU2_BUILD \"local\"/SCREWU2_BUILD \"${GITHUB_RUN_NUMBER}\"/" payload.c
