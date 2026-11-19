@@ -2,7 +2,7 @@ name: Build ScrewU2Music PS5 tile installation kit
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/embedded-music-player]
     paths:
       - 'ps5-app/**'
       - 'assets/logo.svg'
