@@ -2,11 +2,12 @@ name: Build ScrewU2Music PS5 tile installation kit
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/embedded-music-player]
+    branches: [main, feature/embedded-music-player, feature/maxd-native-port]
     paths:
       - 'ps5-app/**'
       - 'assets/logo.svg'
       - '.github/workflows/build-tile.yml'
+      - '.github/workflows/maxd-native.yml'
 concurrency:
   group: screwu2music-release-publisher
   cancel-in-progress: false
@@ -110,3 +111,27 @@ jobs:
             git rebase origin/main
             git push origin HEAD:main
           fi
+
+  build-maxd-engine:
+    if: github.ref == 'refs/heads/feature/maxd-native-port'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout Maxd GPL source
+        run: |
+          git clone https://github.com/HandshakeHackin/youtube-maxd.git maxd-upstream
+          git -C maxd-upstream rev-parse HEAD
+      - name: Build PS5 native player
+        run: |
+          cd maxd-upstream
+          make host-deps
+          make deps
+          make zip
+          test -s dist/PPSA99991.zip
+      - name: Upload native player prototype
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScrewU2Music-Native-Engine-Prototype
+          path: maxd-upstream/dist/PPSA99991.zip
+          if-no-files-found: error
