@@ -2,7 +2,7 @@
 """Generate one PS5 installer ELF source embedding the complete Max'd native app.
 GPL-3.0-or-later: upstream HandshakeHackin/youtube-maxd and ps5-payload-dev.
 """
-import json, pathlib, re, sys, zipfile
+import json, pathlib, sys, zipfile
 archive=pathlib.Path(sys.argv[1])
 output=pathlib.Path(sys.argv[2])
 stage=pathlib.Path(sys.argv[3])
@@ -14,7 +14,7 @@ with zipfile.ZipFile(archive) as z:
         raise SystemExit("Native app eboot missing")
     for i in entries:
         p=pathlib.PurePosixPath(i.filename)
-        if p.parts[0]!=title or ".." in p.parts or not all(re.fullmatch(r"[A-Za-z0-9_.+ -]+",part) for part in p.parts):
+        if p.is_absolute() or p.parts[0]!=title or any(part in ("", ".", "..") or any(c in part for c in ('"', "\\", "\\n", "\\r", "\\0")) for part in p.parts):
             raise SystemExit("Unsafe asset path: "+i.filename)
         dest=stage.joinpath(*p.parts)
         dest.parent.mkdir(parents=True,exist_ok=True)
