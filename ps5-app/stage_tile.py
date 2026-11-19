@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ScrewU2Music PS5 tile staging via the PS5 payload SDK FTP server.
+"""ScrewU2Music folder-mode upload via the PS5 payload SDK FTP server.
 Run from the extracted tile-kit directory on a PC on the same LAN.
 Requires an already-running FTP server with MTRW support and a payload launcher.
 Does not edit PS5 databases. Never runs the installer automatically.
@@ -15,6 +15,7 @@ def main():
     p.add_argument("--host", required=True, help="PS5 local IP")
     p.add_argument("--port", type=int, default=2121)
     p.add_argument("--finalize", action="store_true", help="Upload final system param.json after installer succeeds")
+    p.add_argument("--mode", choices=["folder"], default="folder", help="Folder install only; never creates a PKG")
     args = p.parse_args()
     root = Path(__file__).resolve().parent / TITLE
     files = [
@@ -27,7 +28,7 @@ def main():
     for local, _ in files:
         if not local.is_file():
             raise SystemExit(f"Missing: {local}")
-    print("This will stage app files. It will NOT register the app or alter app.db.")
+    print("Folder install: uploading eboot and metadata directly. No PKG or app.db edits.")
     with FTP() as ftp:
         ftp.connect(args.host, args.port, timeout=15)
         ftp.login()
@@ -51,9 +52,9 @@ def main():
     if args.finalize:
         print("Finalization upload complete. Check home-screen tile.")
         return
-    print("Staging complete. Next, run ScrewU2Music-install.elf on the PS5.")
+    print("Folder upload complete. Run ScrewU2Music-install.elf to register the title.")
     print(f"After successful installer run: python3 stage_tile.py --host {args.host} --finalize")
-    print("The home-screen tile still needs the UI server payload running.")
+    print("Note: folder installation alone does not guarantee the eboot will launch.")
 
 if __name__ == "__main__":
     main()
