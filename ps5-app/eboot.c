@@ -7,7 +7,7 @@
 #include "ui_page.h"
 #include "logo_asset.h"
 
-#define PORT 8787
+#define PORT 8080
 #define AF_INET 2
 #define SOCK_STREAM 1
 #define SOL_SOCKET 0xffff
