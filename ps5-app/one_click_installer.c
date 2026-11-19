@@ -52,7 +52,7 @@ extern int sceHttpTerm(int);
 extern int sceSslTerm(int);
 extern int sceNetPoolDestroy(int);
 
-#define BASE "https://github.com/Edwingilmar/YTMusic-PS5/releases/download/auto-latest/"
+#define BASE "https://raw.githubusercontent.com/Edwingilmar/YTMusic-PS5/main/catalog/"
 static int http_ctx=-1, ssl_ctx=-1, net_pool=-1, tmpl=-1;
 static int network_init(void) {
   sceNetInit();
