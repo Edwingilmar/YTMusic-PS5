@@ -140,6 +140,7 @@ jobs:
           make -C ps5-sdk DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
           export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
           cd ps5-sdk/samples/install_app
+          sed -i 's/TITLE_ID := FAKE02932/TITLE_ID := PPSA99991/' Makefile
           python3 "$GITHUB_WORKSPACE/ps5-app/build_native_installer.py" "$GITHUB_WORKSPACE/maxd-upstream/dist/PPSA99991.zip" payload.c "$PWD"
           { make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet" 2>&1 | tee "$GITHUB_WORKSPACE/native-elf-build.log"; }
           cp payload.elf "$GITHUB_WORKSPACE/ScrewU2Music-Native.elf"
