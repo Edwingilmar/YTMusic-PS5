@@ -1,0 +1,38 @@
+name: Native audio probe (isolated, no release)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/native-player-foundation]
+    paths:
+      - 'native-audio/**'
+      - '.github/workflows/native-audio-probe.yml'
+permissions:
+  contents: read
+jobs:
+  native-audio:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install compiler
+        run: sudo apt-get update && sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make git
+      - name: Install PS5 payload SDK
+        run: |
+          git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
+          make -C ps5-sdk
+          make -C ps5-sdk DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
+      - name: Compile isolated native audio ELF
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
+          cd ps5-sdk/samples/install_app
+          cp "$GITHUB_WORKSPACE/native-audio/audio_probe.c" payload.c
+          make payload.elf LDADD="-lSceAudioOut"
+          test -s payload.elf
+          mkdir -p "$GITHUB_WORKSPACE/native-audio-out"
+          cp payload.elf "$GITHUB_WORKSPACE/native-audio-out/ScrewU2Music-AudioProbe.elf"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ScrewU2Music-NativeAudio-Probe-UNTESTED
+          path: native-audio-out/
+          if-no-files-found: error
