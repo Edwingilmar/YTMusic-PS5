@@ -123,7 +123,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make python3 git
+      - name: Restore cached native build
+        id: native-cache
+        uses: actions/cache@v4
+        with:
+          path: native-cache/PPSA99991.zip
+          key: screwu2music-maxd-native-v1
       - name: Build integrated native YouTube Music app
+        if: steps.native-cache.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/HandshakeHackin/youtube-maxd.git maxd-upstream
           cd maxd-upstream
@@ -131,17 +138,20 @@ jobs:
           make deps
           make zip
           test -s dist/PPSA99991.zip
+          mkdir -p "$GITHUB_WORKSPACE/native-cache"
+          cp dist/PPSA99991.zip "$GITHUB_WORKSPACE/native-cache/PPSA99991.zip"
       - name: Build one ELF containing native application
         shell: bash
         run: |
           set -euxo pipefail
+          exec > >(tee "$GITHUB_WORKSPACE/native-elf-build.log") 2>&1
           git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
           make -C ps5-sdk
           make -C ps5-sdk DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
           export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
           cd ps5-sdk/samples/install_app
           sed -i 's/TITLE_ID := FAKE02932/TITLE_ID := PPSA99991/' Makefile
-          python3 "$GITHUB_WORKSPACE/ps5-app/build_native_installer.py" "$GITHUB_WORKSPACE/maxd-upstream/dist/PPSA99991.zip" payload.c "$PWD"
+          python3 "$GITHUB_WORKSPACE/ps5-app/build_native_installer.py" "$GITHUB_WORKSPACE/native-cache/PPSA99991.zip" payload.c "$PWD"
           { make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet" 2>&1 | tee "$GITHUB_WORKSPACE/native-elf-build.log"; }
           cp payload.elf "$GITHUB_WORKSPACE/ScrewU2Music-Native.elf"
           test -s "$GITHUB_WORKSPACE/ScrewU2Music-Native.elf"
