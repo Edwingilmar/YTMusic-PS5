@@ -22,12 +22,12 @@ with zipfile.ZipFile(archive) as z:
         if i.filename==title+"/sce_sys/param.json":
             meta=json.loads(data)
             meta["localizedParameters"]={k:{**v,"titleName":"ScrewU2Music"} for k,v in meta.get("localizedParameters",{}).items()}
-            if "defaultLanguage" in meta and "localizedParameters" not in meta: meta["titleName"]="ScrewU2Music"
+            if not meta.get("localizedParameters"): meta["titleName"]="ScrewU2Music"
             data=(json.dumps(meta,ensure_ascii=False,indent=2)+"\n").encode()
         dest.write_bytes(data)
 lines=['/* Generated GPL-3.0-or-later native installer; all assets in one ELF. */',
 '#include <stdio.h>','#include <stdint.h>','#include <stddef.h>','#include <errno.h>','#include <sys/stat.h>','#include <ps5/kernel.h>',
-'#define TITLE_ID "PPSA99991"',
+'#ifndef TITLE_ID','#define TITLE_ID "PPSA99991"','#endif',
 'int sceAppInstUtilInitialize(void);','int sceAppInstUtilTerminate(void);','int sceAppInstUtilAppInstallAll(void *);',
 'static int mk(const char *p){if(mkdir(p,0755)==0||errno==EEXIST)return 0;perror(p);return -1;}',
 'static int put(const char *p,const unsigned char *d,size_t n){FILE *f=fopen(p,"wb");if(!f){perror(p);return -1;}int ok=fwrite(d,1,n,f)==n; if(fclose(f))ok=0;return ok?0:-1;}',
