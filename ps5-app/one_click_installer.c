@@ -45,6 +45,8 @@ INCASSET(param, "SCUM00002/sce_sys/param.json")
 int sceAppInstUtilInitialize(void);
 int sceAppInstUtilTerminate(void);
 int sceAppInstUtilAppInstallAll(void *);
+int sceUserServiceInitialize(void *);
+int sceSystemServiceLaunchWebBrowser(const char *, void *);
 
 /* The media tile opens the deeplink, never the freestanding eboot.
  * Keep this payload alive as the local HTTP service for the approved UI.
@@ -57,11 +59,11 @@ static int serve_ui(void) {
   struct sockaddr_in a;
   memset(&a,0,sizeof(a));
   a.sin_family=AF_INET;
-  a.sin_port=htons(8787);
+  a.sin_port=htons(8080);
   a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);
   if(bind(fd,(struct sockaddr*)&a,sizeof(a))<0){perror("ScrewU2Music bind");close(fd);return 11;}
   if(listen(fd,8)<0){perror("ScrewU2Music listen");close(fd);return 12;}
-  printf("ScrewU2Music UI ready at http://127.0.0.1:8787/\\n");
+  printf("ScrewU2Music UI ready at http://127.0.0.1:8080/\\n");
   for(;;) {
     int c=accept(fd,0,0);
     if(c<0)continue;
@@ -133,5 +135,9 @@ int main(void) {
   sceAppInstUtilTerminate();
   if (err) return 3;
   printf("ScrewU2Music media tile installed. Start the tile while this payload is running.\\n");
+  err = sceUserServiceInitialize(0);
+  if (err) { printf("UserService init failed: 0x%08x\\n", err); return 4; }
+  err = sceSystemServiceLaunchWebBrowser("http://127.0.0.1:8080/", NULL);
+  if (err) printf("Browser launch failed: 0x%08x\\n", err);
   return serve_ui();
 }
