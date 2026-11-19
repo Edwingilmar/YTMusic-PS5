@@ -106,5 +106,7 @@ jobs:
           git add catalog/payloads.json catalog/ScrewU2Music.elf catalog/ScrewU2Music-eboot.bin catalog/ScrewU2Music-icon0.png catalog/ScrewU2Music-param.json
           if ! git diff --cached --quiet; then
             git commit -m "Update ScrewU2Music catalog to build $BUILD_NUMBER [skip ci]"
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
