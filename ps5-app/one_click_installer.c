@@ -44,7 +44,7 @@ INCASSET(param, "SCUM00002/sce_sys/param.json")
 
 int sceAppInstUtilInitialize(void);
 int sceAppInstUtilTerminate(void);
-int sceAppInstUtilAppInstallTitleDir(const char *, const char *, void *);
+int sceAppInstUtilAppInstallAll(void *);
 
 /* The media tile opens the deeplink, never the freestanding eboot.
  * Keep this payload alive as the local HTTP service for the approved UI.
@@ -103,8 +103,14 @@ static int write_asset(const char *p, const uint8_t *data, size_t size) {
   return 0;
 }
 static int register_app(void) {
-  /* Official SDK install_app sample uses AppInstallTitleDir, not AppInstallAll. */
-  return sceAppInstUtilAppInstallTitleDir(TITLE_ID, "/user/app/", 0);
+  /* The exported AppInstallTitleDir entry uses an NID in the PS5 SDK.
+   * Resolve it exactly as the working ps5-browser-app installer does. */
+  int (*install_title)(const char*,const char*,void*)=0;
+  uint32_t handle=0;
+  if(!kernel_dynlib_handle(-1,"libSceAppInstUtil.sprx",&handle))
+    install_title=(void*)kernel_dynlib_resolve(-1,handle,"Wudg3Xe3heE");
+  if(install_title)return install_title(TITLE_ID,"/user/app/",0);
+  return sceAppInstUtilAppInstallAll(0);
 }
 int main(void) {
   printf("ScrewU2Music installer build: %s\n", screwu2_build_id);
