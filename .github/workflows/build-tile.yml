@@ -43,7 +43,19 @@ jobs:
           cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00002/sce_sys/param.json
           cp SCUM00002/sce_sys/param.json SCUM00002/sce_sys/param.json.system
           python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00002/icon0.png",output_width=512,output_height=512)'
-          make SCUM00002/eboot.bin LDADD="-lSceNet -lSceUserService -lSceSystemService"
+          # The SDK sample links eboot.elf with ld --static and no libc.
+          # Use the PS5 SDK compiler driver to resolve sockets, libc and system services.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("Makefile")
+          s = p.read_text()
+          original = "$(LD) --static -T eboot.x -o $@ $^"
+          assert original in s, "Unexpected SDK eboot link rule"
+          s = s.replace(original, "$(CC) -o $@ $^ -lSceNet -lSceUserService -lSceSystemService")
+          p.write_text(s)
+          PY
+          make SCUM00002/eboot.bin
+          test -s SCUM00002/eboot.bin
           # Embed the signed eboot, icon and metadata directly in a single installer ELF.
           cp "$GITHUB_WORKSPACE/ps5-app/one_click_installer.c" payload.c
           sed -i "s/SCREWU2_BUILD \"local\"/SCREWU2_BUILD \"${GITHUB_RUN_NUMBER}\"/" payload.c
