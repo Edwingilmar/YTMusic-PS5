@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "ui_page.h"
 
-#define PORT 8080
+#define PORT 8787
 #define AF_INET 2
 #define SOCK_STREAM 1
 #define SOL_SOCKET 0xffff
