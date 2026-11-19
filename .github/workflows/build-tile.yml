@@ -33,6 +33,11 @@ jobs:
           export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
           cd ps5-sdk/samples/install_app
           cp "$GITHUB_WORKSPACE/ps5-app/eboot.c" eboot.c
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path("../../../ps5-app/ui/index.html").read_bytes()
+          Path("ui_page.h").write_text("static const char page[] = {"+",".join(str(b) for b in page)+",0};\n")
+          PY
           sed -i 's/TITLE_ID := FAKE02932/TITLE_ID := SCUM00001/' Makefile
           mkdir -p SCUM00001/sce_sys
           cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00001/sce_sys/param.json
