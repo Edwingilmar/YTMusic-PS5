@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <ps5/kernel.h>
 
@@ -44,6 +45,7 @@ typedef struct app_launch_ctx {
 int sceUserServiceInitialize(void *);
 int sceUserServiceGetForegroundUser(uint32_t *);
 int sceSystemServiceLaunchApp(const char *, char **, app_launch_ctx_t *);
+int sceSystemServiceLaunchWebBrowser(const char *);
 int sceAppInstUtilInitialize(void);
 int sceAppInstUtilTerminate(void);
 int sceAppInstUtilAppInstallAll(void *);
@@ -98,5 +100,13 @@ int main(void) {
   err = sceSystemServiceLaunchApp(TITLE_ID, args, &ctx);
   if (err < 0) { printf("Auto launch failed: 0x%08x\\n", err); return 6; }
   printf("ScrewU2Music launch requested.\\n");
+  /* The tile starts the embedded HTTP server; give it time to bind. */
+  sleep(2);
+  err = sceSystemServiceLaunchWebBrowser("http://127.0.0.1:8080/");
+  if (err < 0) {
+    printf("Browser launch failed: 0x%08x\\n", err);
+    return 7;
+  }
+  printf("ScrewU2Music browser launch requested.\\n");
   return 0;
 }
