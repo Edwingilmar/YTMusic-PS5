@@ -11,6 +11,7 @@ jobs:
   build-native:
     runs-on: ubuntu-24.04
     timeout-minutes: 240
+    # Experimental build, stable 1.0.67 is not modified.
     steps:
       - uses: actions/checkout@v4
       - name: Checkout GPL native YouTube engine source
