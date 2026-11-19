@@ -2,10 +2,9 @@ name: Build ScrewU2Music PS5 tile installation kit
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/embedded-music-player, feature/native-player-foundation]
+    branches: [main, feature/embedded-music-player]
     paths:
       - 'ps5-app/**'
-      - 'native-audio/**'
       - 'assets/logo.svg'
       - '.github/workflows/build-tile.yml'
 concurrency:
@@ -59,24 +58,6 @@ jobs:
           cp SCUM00002/eboot.bin "$GITHUB_WORKSPACE/tile-kit/SCUM00002/eboot.bin"
           cp SCUM00002/icon0.png "$GITHUB_WORKSPACE/tile-kit/SCUM00002/icon0.png"
           cp SCUM00002/sce_sys/param.json* "$GITHUB_WORKSPACE/tile-kit/SCUM00002/sce_sys/"
-      - name: Build native audio test ELF (branch only)
-        if: github.ref == 'refs/heads/feature/native-player-foundation'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
-          cd ps5-sdk/samples/install_app
-          cp "$GITHUB_WORKSPACE/native-audio/audio_probe.c" payload.c
-          make -B payload.elf LDADD="-lSceAudioOut -lSceUserService"
-          mkdir -p "$GITHUB_WORKSPACE/native-audio-out"
-          cp payload.elf "$GITHUB_WORKSPACE/native-audio-out/ScrewU2Music-AudioProbe.elf"
-      - name: Upload native audio test (branch only)
-        if: github.ref == 'refs/heads/feature/native-player-foundation'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ScrewU2Music-NativeAudio-Probe-UNTESTED
-          path: native-audio-out/
-          if-no-files-found: error
       - name: Upload installation kit
         uses: actions/upload-artifact@v4
         with:
