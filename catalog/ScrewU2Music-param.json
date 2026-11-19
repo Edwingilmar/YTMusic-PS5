@@ -11,7 +11,7 @@
   "attribute2": 0,
   "attribute3": 0,
   "contentId": "IV9999-SCUM00002_00-SCREWU2MUSIC0001",
-  "deeplinkUri": "http://127.0.0.1:8787/",
+  "deeplinkUri": "http://127.0.0.1:8080/",
   "applicationDrmType": "free",
   "contentVersion": "01.000.000",
   "masterVersion": "01.00",
