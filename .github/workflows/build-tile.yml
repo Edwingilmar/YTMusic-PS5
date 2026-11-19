@@ -38,25 +38,25 @@ jobs:
           page = Path("../../../ps5-app/ui/index.html").read_bytes()
           Path("ui_page.h").write_text("static const char page[] = {"+",".join(str(b) for b in page)+",0};\n")
           PY
-          sed -i 's/TITLE_ID := FAKE02932/TITLE_ID := SCUM00001/' Makefile
-          mkdir -p SCUM00001/sce_sys
-          cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00001/sce_sys/param.json
-          cp SCUM00001/sce_sys/param.json SCUM00001/sce_sys/param.json.system
-          python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00001/icon0.png",output_width=512,output_height=512)'
+          sed -i 's/TITLE_ID := FAKE02932/TITLE_ID := SCUM00002/' Makefile
+          mkdir -p SCUM00002/sce_sys
+          cp "$GITHUB_WORKSPACE/ps5-app/sce_sys/param.json" SCUM00002/sce_sys/param.json
+          cp SCUM00002/sce_sys/param.json SCUM00002/sce_sys/param.json.system
+          python3 -c 'import cairosvg; cairosvg.svg2png(url="'$GITHUB_WORKSPACE'/assets/logo.svg",write_to="SCUM00002/icon0.png",output_width=512,output_height=512)'
           # Boot diagnostic: use SDK's original static linker and SELF recipe.
           # The prior dynamic ELF header rewrite was not a valid native title build.
           cp "$GITHUB_WORKSPACE/ps5-app/boot_probe.c" eboot.c
-          make SCUM00001/eboot.bin
+          make SCUM00002/eboot.bin
           # Embed the signed eboot, icon and metadata directly in a single installer ELF.
           cp "$GITHUB_WORKSPACE/ps5-app/one_click_installer.c" payload.c
           sed -i "s/SCREWU2_BUILD \"local\"/SCREWU2_BUILD \"${GITHUB_RUN_NUMBER}\"/" payload.c
           make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet -lSceSsl -lSceHttp"
-          mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys"
+          mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00002/sce_sys"
           cp "$GITHUB_WORKSPACE/ps5-app/stage_tile.py" "$GITHUB_WORKSPACE/tile-kit/stage_tile.py"
           cp payload.elf "$GITHUB_WORKSPACE/tile-kit/ScrewU2Music-install.elf"
-          cp SCUM00001/eboot.bin "$GITHUB_WORKSPACE/tile-kit/SCUM00001/eboot.bin"
-          cp SCUM00001/icon0.png "$GITHUB_WORKSPACE/tile-kit/SCUM00001/icon0.png"
-          cp SCUM00001/sce_sys/param.json* "$GITHUB_WORKSPACE/tile-kit/SCUM00001/sce_sys/"
+          cp SCUM00002/eboot.bin "$GITHUB_WORKSPACE/tile-kit/SCUM00002/eboot.bin"
+          cp SCUM00002/icon0.png "$GITHUB_WORKSPACE/tile-kit/SCUM00002/icon0.png"
+          cp SCUM00002/sce_sys/param.json* "$GITHUB_WORKSPACE/tile-kit/SCUM00002/sce_sys/"
       - name: Upload installation kit
         uses: actions/upload-artifact@v4
         with:
@@ -74,9 +74,9 @@ jobs:
           if ! gh release view auto-latest >/dev/null 2>&1; then
             gh release create auto-latest --title "ScrewU2Music latest installer" --notes "Experimental PS5 one-ELF installer. Installs and attempts to launch ScrewU2Music." --latest
           fi
-          cp tile-kit/SCUM00001/eboot.bin ScrewU2Music-eboot.bin
-          cp tile-kit/SCUM00001/icon0.png ScrewU2Music-icon0.png
-          cp tile-kit/SCUM00001/sce_sys/param.json ScrewU2Music-param.json
+          cp tile-kit/SCUM00002/eboot.bin ScrewU2Music-eboot.bin
+          cp tile-kit/SCUM00002/icon0.png ScrewU2Music-icon0.png
+          cp tile-kit/SCUM00002/sce_sys/param.json ScrewU2Music-param.json
           gh release upload auto-latest ScrewU2Music.elf ScrewU2Music-eboot.bin ScrewU2Music-icon0.png ScrewU2Music-param.json --clobber
       - name: Update Payload Manager catalog version and checksum
         if: github.ref == 'refs/heads/main'
