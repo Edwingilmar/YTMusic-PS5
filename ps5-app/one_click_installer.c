@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <ps5/kernel.h>
 
-#define TITLE_ID "SCUM00001"
+#define TITLE_ID "SCUM00002"
 #ifndef SCREWU2_BUILD
 #define SCREWU2_BUILD "local"
 #endif
@@ -30,9 +30,9 @@ static const char screwu2_build_id[] __attribute__((used)) = "ScrewU2Music-build
   extern const uint8_t name[]; \
   extern const size_t name##_size;
 
-INCASSET(eboot, "SCUM00001/eboot.bin")
-INCASSET(icon0, "SCUM00001/icon0.png")
-INCASSET(param, "SCUM00001/sce_sys/param.json")
+INCASSET(eboot, "SCUM00002/eboot.bin")
+INCASSET(icon0, "SCUM00002/icon0.png")
+INCASSET(param, "SCUM00002/sce_sys/param.json")
 
 typedef struct app_launch_ctx {
   uint32_t structsize;
