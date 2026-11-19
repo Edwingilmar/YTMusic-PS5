@@ -15,6 +15,7 @@ permissions:
   contents: write
 jobs:
   build-tile:
+    if: github.ref != 'refs/heads/feature/maxd-native-port'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -112,26 +113,40 @@ jobs:
             git push origin HEAD:main
           fi
 
-  build-maxd-engine:
+  build-native-screwu2music:
     if: github.ref == 'refs/heads/feature/maxd-native-port'
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout Maxd GPL source
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make python3 git
+      - name: Build integrated native YouTube Music app
         run: |
           git clone https://github.com/HandshakeHackin/youtube-maxd.git maxd-upstream
-          git -C maxd-upstream rev-parse HEAD
-      - name: Build PS5 native player
-        run: |
           cd maxd-upstream
           make host-deps
           make deps
           make zip
           test -s dist/PPSA99991.zip
-      - name: Upload native player prototype
+      - name: Build one ELF containing native application
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --depth 1 https://github.com/ps5-payload-dev/sdk.git ps5-sdk
+          make -C ps5-sdk
+          make -C ps5-sdk DESTDIR="$GITHUB_WORKSPACE/ps5-payload-sdk" install
+          export PS5_PAYLOAD_SDK="$GITHUB_WORKSPACE/ps5-payload-sdk"
+          cd ps5-sdk/samples/install_app
+          python3 "$GITHUB_WORKSPACE/ps5-app/build_native_installer.py" "$GITHUB_WORKSPACE/maxd-upstream/dist/PPSA99991.zip" payload.c "$PWD"
+          make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet"
+          cp payload.elf "$GITHUB_WORKSPACE/ScrewU2Music-Native.elf"
+          test -s "$GITHUB_WORKSPACE/ScrewU2Music-Native.elf"
+      - name: Upload single integrated installer
         uses: actions/upload-artifact@v4
         with:
-          name: ScrewU2Music-Native-Engine-Prototype
-          path: maxd-upstream/dist/PPSA99991.zip
+          name: ScrewU2Music-Native-OneELF
+          path: ScrewU2Music-Native.elf
           if-no-files-found: error
