@@ -6,6 +6,7 @@ on:
     paths:
       - 'ps5-app/**'
       - 'assets/logo.svg'
+      - 'integration/**'
       - '.github/workflows/build-tile.yml'
 concurrency:
   group: screwu2music-release-publisher
