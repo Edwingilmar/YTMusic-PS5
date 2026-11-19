@@ -95,7 +95,10 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           cp ScrewU2Music.elf catalog/ScrewU2Music.elf
-          git add catalog/payloads.json catalog/ScrewU2Music.elf
+          cp ScrewU2Music-eboot.bin catalog/ScrewU2Music-eboot.bin
+          cp ScrewU2Music-icon0.png catalog/ScrewU2Music-icon0.png
+          cp ScrewU2Music-param.json catalog/ScrewU2Music-param.json
+          git add catalog/payloads.json catalog/ScrewU2Music.elf catalog/ScrewU2Music-eboot.bin catalog/ScrewU2Music-icon0.png catalog/ScrewU2Music-param.json
           if ! git diff --cached --quiet; then
             git commit -m "Update ScrewU2Music catalog to build $BUILD_NUMBER [skip ci]"
             git push origin HEAD:main
