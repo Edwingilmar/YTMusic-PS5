@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "ui_page.h"
+#include "logo_asset.h"
 
 #define PORT 8787
 #define AF_INET 2
@@ -42,10 +43,11 @@ static void respond(int fd) {
     long n=sc(29,fd,(long)req,sizeof(req)-1,0,0,0); /* recvfrom */
     if(n<=0)return;
     req[n]=0;
-    int head=starts(req,"HEAD / ")||starts(req,"HEAD /index.html ");
-    int ok=head||starts(req,"GET / ")||starts(req,"GET /index.html ");
-    const char *body=ok?page:"Not found\n";
-    size_t len=ok?sizeof(page)-1:10;
+    int logo=starts(req,"GET /assets/logo.svg ")||starts(req,"HEAD /assets/logo.svg ");
+    int head=starts(req,"HEAD / ")||starts(req,"HEAD /index.html ")||starts(req,"HEAD /assets/logo.svg ");
+    int ok=logo||head||starts(req,"GET / ")||starts(req,"GET /index.html ");
+    const char *body=logo?logo_svg:(ok?page:"Not found\\n");
+    size_t len=logo?sizeof(logo_svg)-1:(ok?sizeof(page)-1:10);
     /* Content-Length is computed without libc. */
     char digits[32],reversed[32];size_t nd=0;
     size_t v=len;
