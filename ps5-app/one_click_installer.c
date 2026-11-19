@@ -79,14 +79,14 @@ int main(void) {
       ensure_dir("/system_ex/app/" TITLE_ID "/sce_sys") ||
       write_asset("/system_ex/app/" TITLE_ID "/eboot.bin", eboot, eboot_size) ||
       write_asset("/user/app/" TITLE_ID "/sce_sys/icon0.png", icon0, icon0_size) ||
-      write_asset("/user/app/" TITLE_ID "/sce_sys/param.json", param, param_size) ||
-      write_asset("/system_ex/app/" TITLE_ID "/sce_sys/param.json", param, param_size)) {
+      write_asset("/user/app/" TITLE_ID "/sce_sys/param.json", param, param_size)) {
     sceAppInstUtilTerminate();
     return 2;
   }
   err = register_app();
   if (err) printf("ScrewU2Music register failed: 0x%08x\n", err);
   else printf("ScrewU2Music tile registered.\n");
+  if (!err && write_asset("/system_ex/app/" TITLE_ID "/sce_sys/param.json", param, param_size)) err = -1;
   sceAppInstUtilTerminate();
   if (err) return 3;
   app_launch_ctx_t ctx = {0};
