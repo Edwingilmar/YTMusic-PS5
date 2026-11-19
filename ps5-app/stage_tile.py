@@ -8,7 +8,7 @@ import argparse
 from ftplib import FTP, error_perm
 from pathlib import Path
 
-TITLE = "SCUM00001"
+TITLE = "SCUM00002"
 
 def main():
     p = argparse.ArgumentParser(description="Stage ScrewU2Music files on a PS5")
