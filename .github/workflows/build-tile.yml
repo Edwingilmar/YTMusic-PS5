@@ -51,7 +51,7 @@ jobs:
           # Embed the signed eboot, icon and metadata directly in a single installer ELF.
           cp "$GITHUB_WORKSPACE/ps5-app/one_click_installer.c" payload.c
           sed -i "s/SCREWU2_BUILD \"local\"/SCREWU2_BUILD \"${GITHUB_RUN_NUMBER}\"/" payload.c
-          make payload.elf LDADD="-lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet"
+          make payload.elf LDADD="-lSceIpmi -lSceAppInstUtil -lSceUserService -lSceSystemService -lSceNet"
           mkdir -p "$GITHUB_WORKSPACE/tile-kit/SCUM00002/sce_sys"
           cp "$GITHUB_WORKSPACE/ps5-app/stage_tile.py" "$GITHUB_WORKSPACE/tile-kit/stage_tile.py"
           cp payload.elf "$GITHUB_WORKSPACE/tile-kit/ScrewU2Music-install.elf"
