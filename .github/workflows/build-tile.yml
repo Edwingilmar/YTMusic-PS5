@@ -87,13 +87,15 @@ jobs:
           data = json.loads(catalog.read_text())
           item = next(p for p in data['payloads'] if p['id'] == 'screwu2music')
           item['version'] = '1.0.' + os.environ['BUILD_NUMBER']
+          item['url'] = 'https://raw.githubusercontent.com/Edwingilmar/YTMusic-PS5/main/catalog/ScrewU2Music.elf'
           item['last_update'] = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
           item['checksum'] = hashlib.sha256(pathlib.Path('ScrewU2Music.elf').read_bytes()).hexdigest()
           catalog.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add catalog/payloads.json
+          cp ScrewU2Music.elf catalog/ScrewU2Music.elf
+          git add catalog/payloads.json catalog/ScrewU2Music.elf
           if ! git diff --cached --quiet; then
             git commit -m "Update ScrewU2Music catalog to build $BUILD_NUMBER [skip ci]"
             git push origin HEAD:main
